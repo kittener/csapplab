@@ -265,25 +265,20 @@ static void *recoalesce(void *bp,size_t needsize){
     if (prev_alloc && next_alloc){
         return NULL;
     }else if (prev_alloc && !next_alloc){
-
         size+=GET_SIZE(HDRP(NEXT_BLKP(bp)));
-
         if (size<needsize)
             return NULL;
-        else
-        {
+        else{
             del_chunk_list(NEXT_BLKP(bp));
             PUT(HDRP(bp),PACK(size,1));
             PUT(FTRP(bp),PACK(size,1));
             return bp;
         }
     }else if (!prev_alloc && next_alloc){
-
         size+=GET_SIZE(HDRP(PREV_BLKP(bp)));
         if(size<needsize)
             return NULL;
         else{
-
             size_t thissize=GET_PAYLOAD(bp);
             void* prev_point=PREV_BLKP(bp);
             del_chunk_list(prev_point);
@@ -292,9 +287,7 @@ static void *recoalesce(void *bp,size_t needsize){
             memmove(prev_point,bp,thissize);
             return prev_point;
         }
-    }
-    else{
-
+    }else{
         size+=(GET_SIZE(HDRP(NEXT_BLKP(bp)))+GET_SIZE(FTRP(PREV_BLKP(bp))));
         if (size<needsize)
             return NULL;
@@ -316,10 +309,10 @@ static void *recoalesce(void *bp,size_t needsize){
  */
 void *mm_realloc(void *ptr, size_t size)
 {
+
     if(ptr==NULL){
         return mm_malloc(size);
     }
-
     if(size==0)
     { 
         mm_free(ptr);
@@ -333,29 +326,22 @@ void *mm_realloc(void *ptr, size_t size)
     else
         asize=DSIZE*((size+(DSIZE)+(DSIZE-1))/DSIZE);
 
+    size_t oldsize=GET_PAYLOAD(ptr);
 
-    if(ptr!=NULL)
-    {
-        size_t oldsize=GET_PAYLOAD(ptr);
-        if(oldsize<size){
-
-            void* newptr=recoalesce(ptr,asize);
-            if(newptr==NULL){
-                newptr=mm_malloc(asize);
-                memmove(newptr,ptr,oldsize);
-                mm_free(ptr);
-                return newptr;
-            }
-            else{
-                return newptr;
-            }
+    if(oldsize<size){
+        void* newptr=recoalesce(ptr,asize);
+        if(newptr==NULL){
+            newptr=mm_malloc(asize);
+            memmove(newptr,ptr,oldsize);
+            mm_free(ptr);
+            return newptr;
+        }else{
+            return newptr;
         }
-        else if(oldsize==size){
-            return ptr;
-        }
-        else{
-            return ptr;
-        }
+    }else if(oldsize==size){
+        return ptr;
+    }else{
+        return ptr;
     }
     return NULL;
 }
